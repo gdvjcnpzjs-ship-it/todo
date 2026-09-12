@@ -5,15 +5,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>週末のやることリスト</title>
 
-    <!-- iPhone ホーム画面追加用のアイコン設定（パステルオレンジ＋太めチェック） -->
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23FFB07C'/%3E%3Cpath d='M 48 92 L 75 118 L 132 62' fill='none' stroke='%23FFFFFF' stroke-width='22' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-    <!-- ファビコン（ブラウザ表示用） -->
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23FFB07C'/%3E%3Cpath d='M 48 92 L 75 118 L 132 62' fill='none' stroke='%23FFFFFF' stroke-width='22' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <!-- iPhone/ブラウザ用アイコンの受け皿 -->
+    <link rel="apple-touch-icon" id="appleTouchIcon">
+    <link rel="icon" id="favicon">
 
-    <!-- iPhoneでフルスクリーンアプリとして開く設定 -->
+    <!-- iPhone用の設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="週末ToDo">
+
+    <!-- iPhoneが認識できるPNGアイコンをJavaScript(Canvas)で自動生成 -->
+    <script>
+        (function generateIcon() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 180;
+            canvas.height = 180;
+            const ctx = canvas.getContext('2d');
+
+            // 1. パステルオレンジ背景 (#FFB07C)
+            ctx.fillStyle = '#FFB07C';
+            ctx.fillRect(0, 0, 180, 180);
+
+            // 2. 太めの白チェックマーク
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 22;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            ctx.beginPath();
+            ctx.moveTo(48, 92);
+            ctx.lineTo(75, 118);
+            ctx.lineTo(132, 62);
+            ctx.stroke();
+
+            // 3. PNG形式でicon要素にセット
+            const pngDataUrl = canvas.toDataURL('image/png');
+            
+            window.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('appleTouchIcon').href = pngDataUrl;
+                document.getElementById('favicon').href = pngDataUrl;
+            });
+        })();
+    </script>
 
     <style>
         body {
