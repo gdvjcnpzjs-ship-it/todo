@@ -62,6 +62,28 @@
             text-align: center;
             color: #333;
         }
+        .tab-area {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ccc;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            background: #e9ecef;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #555;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+        }
+        .tab-btn.active {
+            background: #ffb07c;
+            color: white;
+        }
         .input-area {
             display: flex;
             gap: 8px;
@@ -119,6 +141,19 @@
             margin-bottom: 8px;
             border-radius: 6px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            touch-action: none;
+        }
+        li.dragging {
+            opacity: 0.5;
+            background: #fff0e6;
+        }
+        .drag-handle {
+            cursor: grab;
+            margin-right: 8px;
+            color: #aaa;
+            font-size: 1.2rem;
+            user-select: none;
+            touch-action: none;
         }
         .task-text {
             cursor: pointer;
@@ -144,6 +179,11 @@
 
     <h1>📝 週末のやることリスト</h1>
 
+    <div class="tab-area">
+        <button class="tab-btn active" id="tabWeekend" onclick="switchTab('weekend')">Weekend</button>
+        <button class="tab-btn" id="tabDaily" onclick="switchTab('daily')">Daily</button>
+    </div>
+
     <div class="input-area">
         <input type="text" id="todoInput" placeholder="例: 部屋の掃除、買い出し">
         <button class="add-btn" onclick="addTodo()">追加</button>
@@ -156,7 +196,16 @@
     <ul id="todoList"></ul>
 
     <script>
+        let currentTab = 'weekend';
+
         document.addEventListener('DOMContentLoaded', loadTodos);
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.getElementById('tabWeekend').classList.toggle('active', tab === 'weekend');
+            document.getElementById('tabDaily').classList.toggle('active', tab === 'daily');
+            loadTodos();
+        }
 
         function addTodo() {
             const input = document.getElementById('todoInput');
@@ -171,6 +220,10 @@
         function createListItem(text, isCompleted) {
             const ul = document.getElementById('todoList');
             const li = document.createElement('li');
+
+            const handle = document.createElement('span');
+            handle.textContent = '☰';
+            handle.className = 'drag-handle';
 
             const span = document.createElement('span');
             span.textContent = text;
@@ -190,9 +243,49 @@
                 saveTodos();
             };
 
+            li.appendChild(handle);
             li.appendChild(span);
             li.appendChild(delBtn);
+
+            addDragAndDropEvents(li);
+
             ul.appendChild(li);
+        }
+
+        function addDragAndDropEvents(li) {
+            li.addEventListener('touchstart', handleTouchStart, { passive: false });
+            li.addEventListener('touchmove', handleTouchMove, { passive: false });
+            li.addEventListener('touchend', handleTouchEnd);
+        }
+
+        let dragItem = null;
+
+        function handleTouchStart(e) {
+            if (e.target.classList.contains('del-btn') || e.target.classList.contains('task-text')) return;
+            dragItem = this;
+            dragItem.classList.add('dragging');
+        }
+
+        function handleTouchMove(e) {
+            if (!dragItem) return;
+            e.preventDefault();
+            const touchLocation = e.touches[0];
+            const ul = document.getElementById('todoList');
+            const target = document.elementFromPoint(touchLocation.clientX, touchLocation.clientY);
+            const targetLi = target ? target.closest('li') : null;
+
+            if (targetLi && targetLi !== dragItem && targetLi.parentNode === ul) {
+                const rect = targetLi.getBoundingClientRect();
+                const next = (touchLocation.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+                ul.insertBefore(dragItem, next ? targetLi.nextSibling : targetLi);
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (!dragItem) return;
+            dragItem.classList.remove('dragging');
+            dragItem = null;
+            saveTodos();
         }
 
         function resetAllCompleted() {
@@ -210,11 +303,15 @@
                 const completed = li.querySelector('.task-text').classList.contains('completed');
                 todos.push({ text, completed });
             });
-            localStorage.setItem('weekend_todos', JSON.stringify(todos));
+            const key = currentTab === 'weekend' ? 'weekend_todos' : 'daily_todos';
+            localStorage.setItem(key, JSON.stringify(todos));
         }
 
         function loadTodos() {
-            const todos = JSON.parse(localStorage.getItem('weekend_todos') || '[]');
+            const ul = document.getElementById('todoList');
+            ul.innerHTML = '';
+            const key = currentTab === 'weekend' ? 'weekend_todos' : 'daily_todos';
+            const todos = JSON.parse(localStorage.getItem(key) || '[]');
             todos.forEach(todo => createListItem(todo.text, todo.completed));
         }
 
