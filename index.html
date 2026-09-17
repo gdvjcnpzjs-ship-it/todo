@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ToDo</title>
+    <title>週末のやることリスト</title>
 
     <!-- iPhone/ブラウザ用アイコンの受け皿 -->
     <link rel="apple-touch-icon" id="appleTouchIcon">
@@ -180,8 +180,8 @@
     <h1>📝 週末のやることリスト</h1>
 
     <div class="tab-area">
-        <button class="tab-btn active" id="tabWeekend" onclick="switchTab('weekend')">Weekend</button>
-        <button class="tab-btn" id="tabDaily" onclick="switchTab('daily')">Daily</button>
+        <button class="tab-btn active" id="tabDaily" onclick="switchTab('daily')">Daily</button>
+        <button class="tab-btn" id="tabWeekend" onclick="switchTab('weekend')">Weekend</button>
     </div>
 
     <div class="input-area">
@@ -196,7 +196,7 @@
     <ul id="todoList"></ul>
 
     <script>
-        let currentTab = 'weekend';
+        let currentTab = 'daily';
 
         document.addEventListener('DOMContentLoaded', loadTodos);
 
